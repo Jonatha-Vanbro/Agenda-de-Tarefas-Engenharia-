@@ -422,10 +422,6 @@
           <option value="Baixa">Baixa</option>
         </select>
         <input type="text" class="form-control" id="filtroResponsavel" placeholder="Filtrar por responsável…">
-        <div class="form-check form-switch ms-1">
-          <input class="form-check-input" type="checkbox" role="switch" id="filtroFinalizadas">
-          <label class="form-check-label" for="filtroFinalizadas" style="font-size:.8rem;">mostrar concluídas</label>
-        </div>
       </div>
 
       <div style="overflow-x:auto;">
@@ -517,7 +513,7 @@ const CATEGORIAS = [
   { valor: "SEGURANÇA", label: "Segurança" },
   { valor: "AGENDA MANUTENÇÃO", label: "Agenda Manutenção" },
   { valor: "ASSUNTOS EM ESPERA", label: "Assuntos em Espera" },
-  { valor: "ATIVIDADES FINALIZADAS", label: "Finalizadas" }
+  { valor: "CONCLUIDAS", label: "Concluídas" }
 ];
 
 let tarefasCache = [];
@@ -527,9 +523,10 @@ const modalTarefa = new bootstrap.Modal(document.getElementById('modalTarefa'));
 function montarTabs() {
   const el = document.getElementById('catTabs');
   el.innerHTML = CATEGORIAS.map(c => {
-    const qtd = c.valor === 'TODAS'
-      ? tarefasCache.length
-      : tarefasCache.filter(t => t.categoria === c.valor).length;
+    let qtd;
+    if (c.valor === 'TODAS') qtd = tarefasCache.filter(t => t.concluida !== 'SIM').length;
+    else if (c.valor === 'CONCLUIDAS') qtd = tarefasCache.filter(t => t.concluida === 'SIM').length;
+    else qtd = tarefasCache.filter(t => t.categoria === c.valor && t.concluida !== 'SIM').length;
     return `<button class="cat-tab ${categoriaAtiva === c.valor ? 'active' : ''}" data-cat="${c.valor}">
       ${c.label}<span class="count">${qtd}</span>
     </button>`;
@@ -558,13 +555,16 @@ async function carregarTarefas() {
 function aplicarFiltros(lista) {
   const prio = document.getElementById('filtroPrioridade').value;
   const resp = document.getElementById('filtroResponsavel').value.trim().toLowerCase();
-  const mostrarFinalizadas = document.getElementById('filtroFinalizadas').checked;
 
   return lista.filter(t => {
-    if (categoriaAtiva !== 'TODAS' && t.categoria !== categoriaAtiva) return false;
+    if (categoriaAtiva === 'CONCLUIDAS') {
+      if (t.concluida !== 'SIM') return false;
+    } else {
+      if (t.concluida === 'SIM') return false;
+      if (categoriaAtiva !== 'TODAS' && t.categoria !== categoriaAtiva) return false;
+    }
     if (prio && t.prioridade !== prio) return false;
     if (resp && !(t.responsavel || '').toLowerCase().includes(resp)) return false;
-    if (!mostrarFinalizadas && t.concluida === 'SIM' && categoriaAtiva !== 'ATIVIDADES FINALIZADAS') return false;
     return true;
   });
 }
@@ -782,8 +782,7 @@ async function finalizarTarefa(id) {
 }
 
 document.getElementById('btnAtualizar').addEventListener('click', carregarTarefas);
-['filtroPrioridade', 'filtroFinalizadas'].forEach(id =>
-  document.getElementById(id).addEventListener('change', renderizar));
+document.getElementById('filtroPrioridade').addEventListener('change', renderizar);
 document.getElementById('filtroResponsavel').addEventListener('input', renderizar);
 
 /* ---------------- Pauta de impressão ---------------- */
