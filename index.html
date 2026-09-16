@@ -7,370 +7,452 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#0F2438;
-    --paper:#F3F1EA;
-    --blueprint:#0B4F8A;
-    --blueprint-dark:#083A66;
-    --grid-line:rgba(11,79,138,0.10);
-    --alta:#B3261E;
-    --media:#B7791F;
-    --baixa:#2F7D4F;
-    --ok:#2F7D4F;
-    --atrasado:#B3261E;
-    --concluida:#7A7F87;
+    --navy:#1B3B63;
+    --navy-dark:#122C4C;
+    --page-bg:#EEF2F7;
     --card-bg:#FFFFFF;
+    --border:#E3E8EF;
+    --ink:#1F2A3A;
+    --muted:#6B7686;
+    --orange:#F2994A;
+    --orange-dark:#DD8235;
+
+    --pill-green-bg:#E5F6EA; --pill-green-txt:#1F8A4C;
+    --pill-red-bg:#FCE9E7;   --pill-red-txt:#C0392B;
+    --pill-amber-bg:#FDF0DC; --pill-amber-txt:#B7791F;
+    --pill-mint-bg:#E3F5F1;  --pill-mint-txt:#1E8074;
+    --pill-gray-bg:#EEF0F3;  --pill-gray-txt:#6B7280;
+    --pill-purple-bg:#EFEAFB; --pill-purple-txt:#6B4FBB;
   }
   *{box-sizing:border-box;}
   body{
-    background-color:var(--paper);
-    background-image:
-      linear-gradient(var(--grid-line) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-    background-size:28px 28px;
+    background:var(--page-bg);
     color:var(--ink);
     font-family:'Inter',sans-serif;
     min-height:100vh;
-    padding-bottom:4rem;
   }
-  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  .page{
+    max-width:1240px;
+    margin:0 auto;
+    padding:1.5rem 1.25rem 3rem 1.25rem;
+  }
 
   header.topbar{
-    background:var(--blueprint);
-    color:#fff;
-    border-bottom:4px solid var(--blueprint-dark);
-    padding:1.1rem 1.5rem;
+    background:linear-gradient(135deg, var(--navy) 0%, var(--navy-dark) 100%);
+    border-radius:14px;
+    padding:1.4rem 1.6rem;
+    display:flex;
+    align-items:center;
+    gap:1rem;
+    box-shadow:0 4px 14px rgba(18,44,76,0.25);
+    margin-bottom:1.25rem;
+  }
+  .icon-badge{
+    width:52px;
+    height:52px;
+    border-radius:12px;
+    background:#fff;
+    padding:6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+  }
+  .icon-badge img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
   }
   header.topbar h1{
-    font-size:1.5rem;
-    font-weight:700;
+    color:#fff;
+    font-size:1.4rem;
+    font-weight:800;
     margin:0;
     letter-spacing:.2px;
   }
   header.topbar .subtitle{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:.78rem;
-    opacity:.85;
-    margin-top:.15rem;
+    color:rgba(255,255,255,0.75);
+    font-size:.85rem;
+    margin-top:.1rem;
   }
 
-  .toolbar{
+  .grid{
+    display:grid;
+    grid-template-columns: 340px 1fr;
+    gap:1.1rem;
+    align-items:start;
+  }
+  @media (max-width: 900px){
+    .grid{grid-template-columns:1fr;}
+  }
+
+  .card{
     background:var(--card-bg);
-    border:1px solid rgba(11,79,138,0.18);
-    border-radius:6px;
-    padding:.9rem 1rem;
-    margin:1.25rem auto 1rem auto;
+    border:1px solid var(--border);
+    border-radius:12px;
+    box-shadow:0 1px 3px rgba(15,35,60,0.06);
+    padding:1.25rem;
+    margin-bottom:1.1rem;
+  }
+  .card-title{
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+    font-weight:700;
+    font-size:1rem;
+    color:var(--ink);
+    margin-bottom:.15rem;
+  }
+  .card-subtitle{
+    color:var(--muted);
+    font-size:.8rem;
+    margin-bottom:1rem;
+  }
+  .card-title svg{width:18px;height:18px;color:var(--navy);}
+
+  label.field-label{
+    font-size:.8rem;
+    font-weight:600;
+    color:var(--ink);
+    margin-bottom:.3rem;
+    display:block;
+  }
+  .form-select, .form-control{
+    border-radius:8px;
+    border-color:var(--border);
+    font-size:.88rem;
+  }
+  .form-select:focus, .form-control:focus{
+    border-color:var(--navy);
+    box-shadow:0 0 0 .2rem rgba(27,59,99,0.12);
+  }
+
+  .btn-navy{
+    background:var(--navy);
+    border-color:var(--navy);
+    color:#fff;
+    font-weight:600;
+    border-radius:9px;
+    padding:.55rem 1rem;
+  }
+  .btn-navy:hover{background:var(--navy-dark);border-color:var(--navy-dark);color:#fff;}
+  .btn-outline-navy{
+    background:#fff;
+    border:1px solid var(--border);
+    color:var(--navy);
+    font-weight:600;
+    border-radius:9px;
+  }
+  .btn-outline-navy:hover{background:#F4F7FB;color:var(--navy);}
+
+  /* Tabs de categoria */
+  .cat-tabs{
     display:flex;
     flex-wrap:wrap;
-    gap:.6rem;
-    align-items:center;
-  }
-  .toolbar select, .toolbar input{
-    font-size:.85rem;
-  }
-  .toolbar .form-select, .toolbar .form-control{
-    min-width:150px;
-  }
-  .btn-blueprint{
-    background:var(--blueprint);
-    border-color:var(--blueprint-dark);
-    color:#fff;
-  }
-  .btn-blueprint:hover{
-    background:var(--blueprint-dark);
-    color:#fff;
-  }
-
-  .container-narrow{
-    max-width:1100px;
-    margin:0 auto;
-    padding:0 1rem;
-  }
-
-  .category-panel{
-    background:var(--card-bg);
-    border:1px solid rgba(11,79,138,0.18);
-    border-radius:6px;
+    gap:.4rem;
     margin-bottom:1rem;
-    overflow:hidden;
   }
-  .category-header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:.7rem 1rem;
+  .cat-tab{
+    border:1px solid var(--border);
+    background:#fff;
+    color:var(--muted);
+    font-size:.82rem;
+    font-weight:600;
+    padding:.4rem .85rem;
+    border-radius:20px;
     cursor:pointer;
-    border-left:6px solid var(--cat-color, var(--blueprint));
-    background:#FAFAF7;
-  }
-  .category-header .cat-title{
-    font-weight:700;
-    font-size:.95rem;
-    letter-spacing:.2px;
-  }
-  .category-header .cat-count{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:.75rem;
-    color:#555;
-    margin-left:.5rem;
-  }
-  .category-header .chevron{
-    transition:transform .15s ease;
-  }
-  .category-header.collapsed .chevron{
-    transform:rotate(-90deg);
-  }
-  .category-body{
-    border-top:1px solid rgba(11,79,138,0.10);
-  }
-  .category-body.hidden{display:none;}
-
-  .task-row{
-    display:grid;
-    grid-template-columns: 90px 90px 1fr 140px 130px 34px 34px;
-    gap:.6rem;
-    align-items:start;
-    padding:.7rem 1rem;
-    border-bottom:1px solid rgba(11,79,138,0.08);
-  }
-  .task-row:last-child{border-bottom:none;}
-  .task-row.concluida{
-    background:#FAFAFA;
-    opacity:.72;
-  }
-  .task-row.concluida .atividade-title{
-    text-decoration:line-through;
-    text-decoration-color:#999;
-  }
-
-  .badge-prio{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:.68rem;
-    font-weight:600;
-    padding:.2rem .45rem;
-    border-radius:4px;
-    display:inline-block;
     white-space:nowrap;
-    height:fit-content;
   }
-  .badge-prio.alta{background:rgba(179,38,30,0.12);color:var(--alta);}
-  .badge-prio.media{background:rgba(183,121,31,0.14);color:var(--media);}
-  .badge-prio.baixa{background:rgba(47,125,79,0.12);color:var(--baixa);}
-  .badge-prio.none{background:#eee;color:#999;}
+  .cat-tab.active{
+    background:var(--navy);
+    border-color:var(--navy);
+    color:#fff;
+  }
+  .cat-tab .count{
+    opacity:.7;
+    font-weight:500;
+    margin-left:.25rem;
+  }
 
-  .registro-data{
-    font-family:'IBM Plex Mono',monospace;
+  .filter-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.5rem;
+    align-items:center;
+    margin-bottom:1rem;
+  }
+  .filter-row .form-select, .filter-row .form-control{
+    max-width:190px;
+    font-size:.82rem;
+  }
+
+  table.tarefas-table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+  }
+  table.tarefas-table thead th{
+    background:var(--navy);
+    color:#fff;
     font-size:.72rem;
-    color:#555;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    padding:.65rem .75rem;
+    text-align:left;
+    white-space:nowrap;
+  }
+  table.tarefas-table thead th:first-child{border-top-left-radius:8px;}
+  table.tarefas-table thead th:last-child{border-top-right-radius:8px;}
+  table.tarefas-table tbody td{
+    padding:.7rem .75rem;
+    border-bottom:1px solid var(--border);
+    font-size:.85rem;
+    vertical-align:top;
+  }
+  table.tarefas-table tbody tr:hover{background:#FAFBFD;}
+  table.tarefas-table tbody tr.concluida{opacity:.6;}
+  table.tarefas-table tbody tr.concluida td.atividade-cell .atividade-title{
+    text-decoration:line-through;
+    text-decoration-color:#aaa;
   }
 
-  .atividade-title{
-    font-weight:600;
-    font-size:.88rem;
-    line-height:1.3;
-  }
-  .atividade-status{
-    font-size:.8rem;
-    color:#444;
-    margin-top:.15rem;
-    line-height:1.35;
-  }
-
-  .responsavel-txt{
-    font-size:.78rem;
-    color:#333;
-  }
-
-  .situacao-txt{
-    font-family:'IBM Plex Mono',monospace;
+  .pill{
+    display:inline-block;
     font-size:.72rem;
-    font-weight:600;
-    white-space:normal;
+    font-weight:700;
+    padding:.2rem .55rem;
+    border-radius:20px;
+    white-space:nowrap;
   }
-  .situacao-txt.atrasado{color:var(--atrasado);}
-  .situacao-txt.ok{color:var(--ok);}
-  .situacao-txt.hoje{color:var(--media);}
-  .situacao-txt.concluida{color:var(--concluida);}
-  .situacao-txt.vazio{color:#bbb;}
+  .pill-green{background:var(--pill-green-bg);color:var(--pill-green-txt);}
+  .pill-red{background:var(--pill-red-bg);color:var(--pill-red-txt);}
+  .pill-amber{background:var(--pill-amber-bg);color:var(--pill-amber-txt);}
+  .pill-mint{background:var(--pill-mint-bg);color:var(--pill-mint-txt);}
+  .pill-gray{background:var(--pill-gray-bg);color:var(--pill-gray-txt);}
+  .pill-purple{background:var(--pill-purple-bg);color:var(--pill-purple-txt);}
+
+  .atividade-title{font-weight:600;font-size:.85rem;line-height:1.3;}
+  .atividade-status{font-size:.78rem;color:var(--muted);margin-top:.15rem;line-height:1.35;max-width:340px;}
+  .cell-muted{color:var(--muted);font-size:.8rem;}
 
   .icon-btn{
     border:none;
     background:transparent;
-    color:#555;
-    width:30px;
-    height:30px;
-    border-radius:4px;
-    display:flex;
+    color:var(--muted);
+    width:28px;
+    height:28px;
+    border-radius:6px;
+    display:inline-flex;
     align-items:center;
     justify-content:center;
     cursor:pointer;
   }
-  .icon-btn:hover{background:rgba(11,79,138,0.1);color:var(--blueprint);}
-  .icon-btn.finalizar:hover{background:rgba(47,125,79,0.14);color:var(--ok);}
+  .icon-btn:hover{background:#F0F3F8;color:var(--navy);}
+  .icon-btn.finalizar:hover{background:var(--pill-green-bg);color:var(--pill-green-txt);}
 
-  .fab-nova{
-    position:fixed;
-    bottom:1.5rem;
-    right:1.5rem;
-    background:var(--blueprint);
-    color:#fff;
-    border:none;
-    border-radius:50px;
-    padding:.8rem 1.3rem;
-    font-weight:600;
-    font-size:.9rem;
-    box-shadow:0 6px 18px rgba(11,79,138,0.35);
-    z-index:20;
+  .stat-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:.55rem 0;
+    border-bottom:1px solid var(--border);
+    font-size:.85rem;
   }
-  .fab-nova:hover{background:var(--blueprint-dark);color:#fff;}
+  .stat-row:last-child{border-bottom:none;}
+  .stat-label{color:var(--muted);}
 
-  .empty-state{
-    text-align:center;
-    padding:2.5rem 1rem;
-    color:#888;
-    font-size:.9rem;
-  }
-
-  .loading-state{
+  .empty-state, .loading-state{
     text-align:center;
     padding:3rem 1rem;
-    color:#666;
-  }
-
-  .status-pill{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:.72rem;
-    padding:.2rem .55rem;
-    border-radius:4px;
-  }
-
-  @media (max-width: 820px){
-    .task-row{
-      grid-template-columns: 1fr 1fr;
-      grid-template-areas:
-        "reg prio"
-        "ativ ativ"
-        "resp prev"
-        "sit sit"
-        "acoes acoes";
-    }
-    .task-row .col-registro{grid-area:reg;}
-    .task-row .col-prio{grid-area:prio;}
-    .task-row .col-ativ{grid-area:ativ;}
-    .task-row .col-resp{grid-area:resp;}
-    .task-row .col-prev{grid-area:prev;}
-    .task-row .col-sit{grid-area:sit;}
-    .task-row .col-acoes{grid-area:acoes; display:flex; justify-content:flex-end; gap:.3rem;}
+    color:var(--muted);
+    font-size:.88rem;
   }
 </style>
 </head>
 <body>
 
-<header class="topbar">
-  <div class="container-narrow d-flex justify-content-between align-items-center flex-wrap gap-2">
+<div class="page">
+
+  <header class="topbar">
+    <div class="icon-badge">
+      <img src="logo1.png" alt="Logo Engenharia">
+    </div>
     <div>
       <h1>ATA Engenharia</h1>
-      <div class="subtitle" id="resumoHeader">carregando tarefas…</div>
+      <div class="subtitle" id="resumoHeader">Relação de tarefas do setor de Engenharia</div>
     </div>
-    <div class="mono" style="font-size:.75rem; opacity:.85;">Relação de Tarefas — Setor de Engenharia</div>
-  </div>
-</header>
+  </header>
 
-<div class="container-narrow">
+  <div class="grid">
 
-  <div class="toolbar">
-    <select class="form-select" id="filtroCategoria">
-      <option value="">Todas as categorias</option>
-      <option value="GERAL">Geral</option>
-      <option value="SEGURANÇA">Segurança</option>
-      <option value="AGENDA MANUTENÇÃO">Agenda Manutenção</option>
-      <option value="ASSUNTOS EM ESPERA">Assuntos em Espera</option>
-      <option value="ATIVIDADES FINALIZADAS">Atividades Finalizadas</option>
-    </select>
-    <select class="form-select" id="filtroPrioridade">
-      <option value="">Todas as prioridades</option>
-      <option value="Alta">Alta</option>
-      <option value="Média">Média</option>
-      <option value="Baixa">Baixa</option>
-    </select>
-    <input type="text" class="form-control" id="filtroResponsavel" placeholder="Filtrar por responsável…">
-    <div class="form-check form-switch ms-1">
-      <input class="form-check-input" type="checkbox" role="switch" id="filtroFinalizadas">
-      <label class="form-check-label mono" for="filtroFinalizadas" style="font-size:.78rem;">mostrar concluídas</label>
+    <!-- COLUNA ESQUERDA -->
+    <div>
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>
+          Nova Tarefa
+        </div>
+        <div class="card-subtitle">Registrar uma atividade na relação</div>
+
+        <div class="mb-2">
+          <label class="field-label">Categoria</label>
+          <select class="form-select" id="campoCategoria">
+            <option value="GERAL">Geral</option>
+            <option value="SEGURANÇA">Segurança</option>
+            <option value="AGENDA MANUTENÇÃO">Agenda Manutenção</option>
+            <option value="ASSUNTOS EM ESPERA">Assuntos em Espera</option>
+            <option value="ATIVIDADES FINALIZADAS">Atividades Finalizadas</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="field-label">Atividade</label>
+          <textarea class="form-control" id="campoAtividade" rows="2" placeholder="Descreva a atividade..."></textarea>
+        </div>
+        <div class="mb-2">
+          <label class="field-label">Status / observações</label>
+          <textarea class="form-control" id="campoStatus" rows="2" placeholder="Situação atual (opcional)"></textarea>
+        </div>
+        <div class="mb-2">
+          <label class="field-label">Prioridade</label>
+          <select class="form-select" id="campoPrioridade">
+            <option value="">—</option>
+            <option value="Alta">Alta</option>
+            <option value="Média">Média</option>
+            <option value="Baixa">Baixa</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="field-label">Responsável</label>
+          <input type="text" class="form-control" id="campoResponsavel" placeholder="Nome (opcional)">
+        </div>
+        <div class="row">
+          <div class="col-6 mb-2">
+            <label class="field-label">Registro</label>
+            <input type="date" class="form-control" id="campoRegistro">
+          </div>
+          <div class="col-6 mb-2">
+            <label class="field-label">Previsão</label>
+            <input type="date" class="form-control" id="campoPrevisao">
+          </div>
+        </div>
+        <div class="text-danger" style="font-size:.78rem;" id="erroFormulario"></div>
+        <button class="btn btn-navy w-100 mt-2" id="btnRegistrar">Registrar Tarefa</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
+          Resumo
+        </div>
+        <div class="card-subtitle">Panorama geral das tarefas</div>
+        <div class="stat-row"><span class="stat-label">Total de tarefas</span><span class="pill pill-gray" id="statTotal">—</span></div>
+        <div class="stat-row"><span class="stat-label">Em aberto</span><span class="pill pill-mint" id="statAbertas">—</span></div>
+        <div class="stat-row"><span class="stat-label">Atrasadas</span><span class="pill pill-red" id="statAtrasadas">—</span></div>
+        <div class="stat-row"><span class="stat-label">Concluídas</span><span class="pill pill-green" id="statConcluidas">—</span></div>
+      </div>
     </div>
-    <button class="btn btn-blueprint btn-sm ms-auto" id="btnAtualizar">Atualizar</button>
-  </div>
 
-  <div id="areaConteudo">
-    <div class="loading-state">Carregando tarefas do backend…</div>
-  </div>
+    <!-- COLUNA DIREITA -->
+    <div class="card">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+        <div>
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M3 10h18"></path></svg>
+            Tarefas de Engenharia
+          </div>
+          <div class="card-subtitle" style="margin-bottom:0;">Acompanhamento das atividades do setor</div>
+        </div>
+        <button class="btn btn-outline-navy btn-sm" id="btnAtualizar">↻ Atualizar</button>
+      </div>
 
+      <div class="cat-tabs" id="catTabs"></div>
+
+      <div class="filter-row">
+        <select class="form-select" id="filtroPrioridade">
+          <option value="">Todas as prioridades</option>
+          <option value="Alta">Alta</option>
+          <option value="Média">Média</option>
+          <option value="Baixa">Baixa</option>
+        </select>
+        <input type="text" class="form-control" id="filtroResponsavel" placeholder="Filtrar por responsável…">
+        <div class="form-check form-switch ms-1">
+          <input class="form-check-input" type="checkbox" role="switch" id="filtroFinalizadas">
+          <label class="form-check-label" for="filtroFinalizadas" style="font-size:.8rem;">mostrar concluídas</label>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <div id="areaConteudo">
+          <div class="loading-state">Carregando tarefas do backend…</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<button class="fab-nova" id="btnNova">+ Nova tarefa</button>
-
-<!-- Modal Nova/Editar Tarefa -->
+<!-- Modal Editar Tarefa -->
 <div class="modal fade" id="modalTarefa" tabindex="-1">
   <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header" style="background:var(--blueprint); color:#fff;">
-        <h5 class="modal-title" id="modalTituloTarefa">Nova tarefa</h5>
+    <div class="modal-content" style="border-radius:12px;">
+      <div class="modal-header" style="background:var(--navy); color:#fff; border-radius:12px 12px 0 0;">
+        <h5 class="modal-title" id="modalTituloTarefa">Editar tarefa</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <form id="formTarefa">
-          <input type="hidden" id="campoId">
-          <div class="mb-2">
-            <label class="form-label mono" style="font-size:.75rem;">Categoria</label>
-            <select class="form-select" id="campoCategoria" required>
-              <option value="GERAL">Geral</option>
-              <option value="SEGURANÇA">Segurança</option>
-              <option value="AGENDA MANUTENÇÃO">Agenda Manutenção</option>
-              <option value="ASSUNTOS EM ESPERA">Assuntos em Espera</option>
-              <option value="ATIVIDADES FINALIZADAS">Atividades Finalizadas</option>
+        <input type="hidden" id="editId">
+        <div class="mb-2">
+          <label class="field-label">Categoria</label>
+          <select class="form-select" id="editCategoria">
+            <option value="GERAL">Geral</option>
+            <option value="SEGURANÇA">Segurança</option>
+            <option value="AGENDA MANUTENÇÃO">Agenda Manutenção</option>
+            <option value="ASSUNTOS EM ESPERA">Assuntos em Espera</option>
+            <option value="ATIVIDADES FINALIZADAS">Atividades Finalizadas</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="field-label">Atividade</label>
+          <textarea class="form-control" id="editAtividade" rows="2"></textarea>
+        </div>
+        <div class="mb-2">
+          <label class="field-label">Status / observações</label>
+          <textarea class="form-control" id="editStatus" rows="2"></textarea>
+        </div>
+        <div class="row">
+          <div class="col-6 mb-2">
+            <label class="field-label">Prioridade</label>
+            <select class="form-select" id="editPrioridade">
+              <option value="">—</option>
+              <option value="Alta">Alta</option>
+              <option value="Média">Média</option>
+              <option value="Baixa">Baixa</option>
             </select>
           </div>
-          <div class="mb-2">
-            <label class="form-label mono" style="font-size:.75rem;">Atividade</label>
-            <textarea class="form-control" id="campoAtividade" rows="2" required></textarea>
+          <div class="col-6 mb-2">
+            <label class="field-label">Responsável</label>
+            <input type="text" class="form-control" id="editResponsavel">
           </div>
-          <div class="mb-2">
-            <label class="form-label mono" style="font-size:.75rem;">Status / observações</label>
-            <textarea class="form-control" id="campoStatus" rows="2"></textarea>
+        </div>
+        <div class="row">
+          <div class="col-6 mb-2">
+            <label class="field-label">Registro</label>
+            <input type="date" class="form-control" id="editRegistro">
           </div>
-          <div class="row">
-            <div class="col-6 mb-2">
-              <label class="form-label mono" style="font-size:.75rem;">Prioridade</label>
-              <select class="form-select" id="campoPrioridade">
-                <option value="">—</option>
-                <option value="Alta">Alta</option>
-                <option value="Média">Média</option>
-                <option value="Baixa">Baixa</option>
-              </select>
-            </div>
-            <div class="col-6 mb-2">
-              <label class="form-label mono" style="font-size:.75rem;">Responsável</label>
-              <input type="text" class="form-control" id="campoResponsavel">
-            </div>
+          <div class="col-6 mb-2">
+            <label class="field-label">Previsão</label>
+            <input type="date" class="form-control" id="editPrevisao">
           </div>
-          <div class="row">
-            <div class="col-6 mb-2">
-              <label class="form-label mono" style="font-size:.75rem;">Registro</label>
-              <input type="date" class="form-control" id="campoRegistro">
-            </div>
-            <div class="col-6 mb-2">
-              <label class="form-label mono" style="font-size:.75rem;">Previsão</label>
-              <input type="date" class="form-control" id="campoPrevisao">
-            </div>
-          </div>
-        </form>
-        <div class="text-danger mono" style="font-size:.78rem;" id="erroFormulario"></div>
+        </div>
+        <div class="text-danger" style="font-size:.78rem;" id="erroEdicao"></div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-blueprint btn-sm" id="btnSalvarTarefa">Salvar</button>
+        <button type="button" class="btn btn-navy btn-sm" id="btnSalvarEdicao">Salvar alterações</button>
       </div>
     </div>
   </div>
@@ -379,24 +461,38 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 /* ============================================================================
-   ATA ENGENHARIA — FRONTEND
-   Consome o Web App publicado a partir de Code.gs.
+   ATA ENGENHARIA — FRONTEND (visual alinhado ao Controle de Materiais - Bobinagem)
    Troque APPS_SCRIPT_URL pelo link da sua própria implantação, se necessário.
    ============================================================================ */
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbycq3UyMHH_c3TtGbJno6mwAiuI0jqjc8IhFjtyCC1fjNCDVBHVhoLeoLbTwtaWnq9T/exec";
 
-const CATEGORIAS_ORDEM = ["GERAL", "SEGURANÇA", "AGENDA MANUTENÇÃO", "ASSUNTOS EM ESPERA", "ATIVIDADES FINALIZADAS"];
-const CATEGORIA_COR = {
-  "GERAL": "#0B4F8A",
-  "SEGURANÇA": "#B3261E",
-  "AGENDA MANUTENÇÃO": "#B7791F",
-  "ASSUNTOS EM ESPERA": "#6B5CA5",
-  "ATIVIDADES FINALIZADAS": "#7A7F87"
-};
+const CATEGORIAS = [
+  { valor: "TODAS", label: "Todas" },
+  { valor: "GERAL", label: "Geral" },
+  { valor: "SEGURANÇA", label: "Segurança" },
+  { valor: "AGENDA MANUTENÇÃO", label: "Agenda Manutenção" },
+  { valor: "ASSUNTOS EM ESPERA", label: "Assuntos em Espera" },
+  { valor: "ATIVIDADES FINALIZADAS", label: "Finalizadas" }
+];
 
 let tarefasCache = [];
-let colapsadas = new Set(); // categorias colapsadas pelo usuário
+let categoriaAtiva = "TODAS";
 const modalTarefa = new bootstrap.Modal(document.getElementById('modalTarefa'));
+
+function montarTabs() {
+  const el = document.getElementById('catTabs');
+  el.innerHTML = CATEGORIAS.map(c => {
+    const qtd = c.valor === 'TODAS'
+      ? tarefasCache.length
+      : tarefasCache.filter(t => t.categoria === c.valor).length;
+    return `<button class="cat-tab ${categoriaAtiva === c.valor ? 'active' : ''}" data-cat="${c.valor}">
+      ${c.label}<span class="count">${qtd}</span>
+    </button>`;
+  }).join('');
+  el.querySelectorAll('.cat-tab').forEach(b => {
+    b.addEventListener('click', () => { categoriaAtiva = b.dataset.cat; renderizar(); });
+  });
+}
 
 async function carregarTarefas() {
   document.getElementById('areaConteudo').innerHTML = '<div class="loading-state">Carregando tarefas do backend…</div>';
@@ -409,125 +505,119 @@ async function carregarTarefas() {
   } catch (err) {
     document.getElementById('areaConteudo').innerHTML =
       '<div class="empty-state">Não foi possível carregar as tarefas.<br>' +
-      '<span class="mono" style="font-size:.72rem;">' + escapeHtml(err.message) + '</span><br><br>' +
-      'Confira se a URL do Apps Script em <code>APPS_SCRIPT_URL</code> está correta e se a implantação ' +
-      'está com acesso "Qualquer pessoa".</div>';
+      '<span style="font-size:.75rem;">' + escapeHtml(err.message) + '</span><br><br>' +
+      'Confira a URL do Apps Script em <code>APPS_SCRIPT_URL</code> e o acesso "Qualquer pessoa" na implantação.</div>';
   }
 }
 
 function aplicarFiltros(lista) {
-  const cat = document.getElementById('filtroCategoria').value;
   const prio = document.getElementById('filtroPrioridade').value;
   const resp = document.getElementById('filtroResponsavel').value.trim().toLowerCase();
   const mostrarFinalizadas = document.getElementById('filtroFinalizadas').checked;
 
   return lista.filter(t => {
-    if (cat && t.categoria !== cat) return false;
+    if (categoriaAtiva !== 'TODAS' && t.categoria !== categoriaAtiva) return false;
     if (prio && t.prioridade !== prio) return false;
     if (resp && !(t.responsavel || '').toLowerCase().includes(resp)) return false;
-    if (!mostrarFinalizadas && t.concluida === 'SIM' && cat !== 'ATIVIDADES FINALIZADAS') return false;
+    if (!mostrarFinalizadas && t.concluida === 'SIM' && categoriaAtiva !== 'ATIVIDADES FINALIZADAS') return false;
     return true;
   });
 }
 
 function renderizar() {
-  const filtradas = aplicarFiltros(tarefasCache);
-  const area = document.getElementById('areaConteudo');
+  montarTabs();
 
   const total = tarefasCache.length;
-  const abertas = tarefasCache.filter(t => t.concluida !== 'SIM').length;
+  const concluidas = tarefasCache.filter(t => t.concluida === 'SIM').length;
+  const abertas = total - concluidas;
   const atrasadas = tarefasCache.filter(t => (t.situacao || '').startsWith('Atrasado')).length;
-  document.getElementById('resumoHeader').textContent =
-    total + ' tarefa(s) no total · ' + abertas + ' em aberto · ' + atrasadas + ' atrasada(s)';
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statAbertas').textContent = abertas;
+  document.getElementById('statAtrasadas').textContent = atrasadas;
+  document.getElementById('statConcluidas').textContent = concluidas;
+
+  const filtradas = aplicarFiltros(tarefasCache);
+  const area = document.getElementById('areaConteudo');
 
   if (filtradas.length === 0) {
     area.innerHTML = '<div class="empty-state">Nenhuma tarefa encontrada com esses filtros.</div>';
     return;
   }
 
-  const porCategoria = {};
-  filtradas.forEach(t => {
-    const c = t.categoria || 'SEM CATEGORIA';
-    if (!porCategoria[c]) porCategoria[c] = [];
-    porCategoria[c].push(t);
-  });
+  area.innerHTML = `
+    <table class="tarefas-table">
+      <thead>
+        <tr>
+          <th>Registro</th>
+          <th>Categoria</th>
+          <th>Prioridade</th>
+          <th>Atividade</th>
+          <th>Responsável</th>
+          <th>Previsão</th>
+          <th>Situação</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filtradas.map(renderLinha).join('')}
+      </tbody>
+    </table>`;
 
-  const categoriasPresentes = CATEGORIAS_ORDEM.filter(c => porCategoria[c]);
-  Object.keys(porCategoria).forEach(c => { if (!categoriasPresentes.includes(c)) categoriasPresentes.push(c); });
-
-  area.innerHTML = categoriasPresentes.map(cat => renderCategoria(cat, porCategoria[cat])).join('');
-
-  // listeners
-  area.querySelectorAll('.category-header').forEach(h => {
-    h.addEventListener('click', () => {
-      const cat = h.dataset.cat;
-      if (colapsadas.has(cat)) colapsadas.delete(cat); else colapsadas.add(cat);
-      renderizar();
-    });
-  });
-  area.querySelectorAll('.btn-editar').forEach(b => {
-    b.addEventListener('click', (e) => { e.stopPropagation(); abrirEdicao(b.dataset.id); });
-  });
-  area.querySelectorAll('.btn-finalizar').forEach(b => {
-    b.addEventListener('click', (e) => { e.stopPropagation(); finalizarTarefa(b.dataset.id); });
-  });
+  area.querySelectorAll('.btn-editar').forEach(b => b.addEventListener('click', () => abrirEdicao(b.dataset.id)));
+  area.querySelectorAll('.btn-finalizar').forEach(b => b.addEventListener('click', () => finalizarTarefa(b.dataset.id)));
 }
 
-function renderCategoria(cat, tarefas) {
-  const cor = CATEGORIA_COR[cat] || '#0B4F8A';
-  const isCollapsed = colapsadas.has(cat);
-  return `
-    <div class="category-panel">
-      <div class="category-header ${isCollapsed ? 'collapsed' : ''}" data-cat="${escapeHtml(cat)}" style="--cat-color:${cor};">
-        <div>
-          <span class="cat-title">${labelCategoria(cat)}</span>
-          <span class="cat-count">${tarefas.length} tarefa(s)</span>
-        </div>
-        <span class="chevron">▾</span>
-      </div>
-      <div class="category-body ${isCollapsed ? 'hidden' : ''}">
-        ${tarefas.map(renderTarefa).join('')}
-      </div>
-    </div>`;
+function pillPrioridade(p) {
+  if (p === 'Alta') return `<span class="pill pill-red">Alta</span>`;
+  if (p === 'Média') return `<span class="pill pill-amber">Média</span>`;
+  if (p === 'Baixa') return `<span class="pill pill-green">Baixa</span>`;
+  return `<span class="pill pill-gray">—</span>`;
 }
 
-function labelCategoria(cat) {
-  const nomes = {
-    "GERAL": "Geral",
-    "SEGURANÇA": "Segurança",
-    "AGENDA MANUTENÇÃO": "Agenda Manutenção",
-    "ASSUNTOS EM ESPERA": "Assuntos em Espera",
-    "ATIVIDADES FINALIZADAS": "Atividades Finalizadas"
+function pillCategoria(cat) {
+  const mapa = {
+    "GERAL": "pill-gray",
+    "SEGURANÇA": "pill-red",
+    "AGENDA MANUTENÇÃO": "pill-amber",
+    "ASSUNTOS EM ESPERA": "pill-purple",
+    "ATIVIDADES FINALIZADAS": "pill-green"
   };
-  return nomes[cat] || cat;
+  const nomes = {
+    "GERAL": "Geral", "SEGURANÇA": "Segurança", "AGENDA MANUTENÇÃO": "Agenda Manut.",
+    "ASSUNTOS EM ESPERA": "Em espera", "ATIVIDADES FINALIZADAS": "Finalizada"
+  };
+  return `<span class="pill ${mapa[cat] || 'pill-gray'}">${nomes[cat] || cat}</span>`;
 }
 
-function renderTarefa(t) {
-  const prioClasse = t.prioridade === 'Alta' ? 'alta' : t.prioridade === 'Média' ? 'media' : t.prioridade === 'Baixa' ? 'baixa' : 'none';
-  const sit = t.situacao || '';
-  let sitClasse = 'vazio';
-  if (sit.startsWith('Atrasado')) sitClasse = 'atrasado';
-  else if (sit === 'Concluída') sitClasse = 'concluida';
-  else if (sit === 'Encerra hoje') sitClasse = 'hoje';
-  else if (sit.startsWith('Faltam')) sitClasse = 'ok';
+function pillSituacao(sit) {
+  if (!sit) return `<span class="pill pill-gray">—</span>`;
+  if (sit.startsWith('Atrasado')) return `<span class="pill pill-red">${escapeHtml(sit)}</span>`;
+  if (sit === 'Concluída') return `<span class="pill pill-green">Concluída</span>`;
+  if (sit === 'Encerra hoje') return `<span class="pill pill-amber">Encerra hoje</span>`;
+  if (sit.startsWith('Faltam')) return `<span class="pill pill-mint">${escapeHtml(sit)}</span>`;
+  return `<span class="pill pill-gray">${escapeHtml(sit)}</span>`;
+}
 
+function renderLinha(t) {
   return `
-    <div class="task-row ${t.concluida === 'SIM' ? 'concluida' : ''}">
-      <div class="col-registro registro-data">${escapeHtml(t.registro || '—')}</div>
-      <div class="col-prio"><span class="badge-prio ${prioClasse}">${escapeHtml(t.prioridade || '—')}</span></div>
-      <div class="col-ativ">
+    <tr class="${t.concluida === 'SIM' ? 'concluida' : ''}">
+      <td class="cell-muted">${escapeHtml(t.registro || '—')}</td>
+      <td>${pillCategoria(t.categoria)}</td>
+      <td>${pillPrioridade(t.prioridade)}</td>
+      <td class="atividade-cell">
         <div class="atividade-title">${escapeHtml(t.atividade)}</div>
         ${t.status ? `<div class="atividade-status">${escapeHtml(t.status)}</div>` : ''}
-      </div>
-      <div class="col-resp responsavel-txt">${escapeHtml(t.responsavel || '—')}${t.previsao ? '<br><span class="registro-data">prev: ' + escapeHtml(t.previsao) + '</span>' : ''}</div>
-      <div class="col-sit"><span class="situacao-txt ${sitClasse}">${escapeHtml(sit || '—')}</span></div>
-      <div class="col-acoes">
-        <button class="icon-btn btn-editar" data-id="${t.id}" title="Editar">✎</button>
-      </div>
-      <div class="col-acoes">
-        ${t.concluida !== 'SIM' ? `<button class="icon-btn finalizar btn-finalizar" data-id="${t.id}" title="Finalizar">✓</button>` : ''}
-      </div>
-    </div>`;
+      </td>
+      <td class="cell-muted">${escapeHtml(t.responsavel || '—')}</td>
+      <td class="cell-muted">${escapeHtml(t.previsao || '—')}</td>
+      <td>${pillSituacao(t.situacao)}</td>
+      <td>
+        <div class="d-flex gap-1">
+          <button class="icon-btn btn-editar" data-id="${t.id}" title="Editar">✎</button>
+          ${t.concluida !== 'SIM' ? `<button class="icon-btn finalizar btn-finalizar" data-id="${t.id}" title="Finalizar">✓</button>` : ''}
+        </div>
+      </td>
+    </tr>`;
 }
 
 function escapeHtml(str) {
@@ -535,33 +625,6 @@ function escapeHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-}
-
-/* ---------------- Modal: nova / editar ---------------- */
-
-function abrirNova() {
-  document.getElementById('modalTituloTarefa').textContent = 'Nova tarefa';
-  document.getElementById('formTarefa').reset();
-  document.getElementById('campoId').value = '';
-  document.getElementById('campoRegistro').value = new Date().toISOString().slice(0, 10);
-  document.getElementById('erroFormulario').textContent = '';
-  modalTarefa.show();
-}
-
-function abrirEdicao(id) {
-  const t = tarefasCache.find(x => String(x.id) === String(id));
-  if (!t) return;
-  document.getElementById('modalTituloTarefa').textContent = 'Editar tarefa #' + t.id;
-  document.getElementById('campoId').value = t.id;
-  document.getElementById('campoCategoria').value = t.categoria;
-  document.getElementById('campoAtividade').value = t.atividade || '';
-  document.getElementById('campoStatus').value = t.status || '';
-  document.getElementById('campoPrioridade').value = t.prioridade || '';
-  document.getElementById('campoResponsavel').value = t.responsavel || '';
-  document.getElementById('campoRegistro').value = paraInputDate(t.registro);
-  document.getElementById('campoPrevisao').value = paraInputDate(t.previsao);
-  document.getElementById('erroFormulario').textContent = '';
-  modalTarefa.show();
 }
 
 function paraInputDate(brDate) {
@@ -576,7 +639,6 @@ function paraDataBR(inputDate) {
 }
 
 async function chamarBackend(action, body) {
-  // Content-Type text/plain evita pré-flight CORS no Apps Script.
   const resp = await fetch(APPS_SCRIPT_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -587,23 +649,18 @@ async function chamarBackend(action, body) {
   return json.data;
 }
 
-document.getElementById('btnNova').addEventListener('click', abrirNova);
-document.getElementById('btnAtualizar').addEventListener('click', carregarTarefas);
-['filtroCategoria', 'filtroPrioridade', 'filtroFinalizadas'].forEach(id =>
-  document.getElementById(id).addEventListener('change', renderizar));
-document.getElementById('filtroResponsavel').addEventListener('input', renderizar);
+/* ---------------- Criar (formulário fixo na coluna esquerda) ---------------- */
 
-document.getElementById('btnSalvarTarefa').addEventListener('click', async () => {
-  const id = document.getElementById('campoId').value;
-  const atividade = document.getElementById('campoAtividade').value.trim();
-  const categoria = document.getElementById('campoCategoria').value;
+document.getElementById('campoRegistro').value = new Date().toISOString().slice(0, 10);
+
+document.getElementById('btnRegistrar').addEventListener('click', async () => {
   const erroEl = document.getElementById('erroFormulario');
   erroEl.textContent = '';
-
-  if (!atividade) { erroEl.textContent = 'Descreva a atividade antes de salvar.'; return; }
+  const atividade = document.getElementById('campoAtividade').value.trim();
+  if (!atividade) { erroEl.textContent = 'Descreva a atividade antes de registrar.'; return; }
 
   const tarefa = {
-    categoria,
+    categoria: document.getElementById('campoCategoria').value,
     atividade,
     status: document.getElementById('campoStatus').value.trim(),
     prioridade: document.getElementById('campoPrioridade').value,
@@ -613,11 +670,55 @@ document.getElementById('btnSalvarTarefa').addEventListener('click', async () =>
   };
 
   try {
-    if (id) {
-      await chamarBackend('editar', { id, tarefa });
-    } else {
-      await chamarBackend('criar', { tarefa });
-    }
+    await chamarBackend('criar', { tarefa });
+    document.getElementById('campoAtividade').value = '';
+    document.getElementById('campoStatus').value = '';
+    document.getElementById('campoResponsavel').value = '';
+    document.getElementById('campoPrevisao').value = '';
+    document.getElementById('campoPrioridade').value = '';
+    await carregarTarefas();
+  } catch (err) {
+    erroEl.textContent = err.message;
+  }
+});
+
+/* ---------------- Editar (modal) ---------------- */
+
+function abrirEdicao(id) {
+  const t = tarefasCache.find(x => String(x.id) === String(id));
+  if (!t) return;
+  document.getElementById('modalTituloTarefa').textContent = 'Editar tarefa #' + t.id;
+  document.getElementById('editId').value = t.id;
+  document.getElementById('editCategoria').value = t.categoria;
+  document.getElementById('editAtividade').value = t.atividade || '';
+  document.getElementById('editStatus').value = t.status || '';
+  document.getElementById('editPrioridade').value = t.prioridade || '';
+  document.getElementById('editResponsavel').value = t.responsavel || '';
+  document.getElementById('editRegistro').value = paraInputDate(t.registro);
+  document.getElementById('editPrevisao').value = paraInputDate(t.previsao);
+  document.getElementById('erroEdicao').textContent = '';
+  modalTarefa.show();
+}
+
+document.getElementById('btnSalvarEdicao').addEventListener('click', async () => {
+  const id = document.getElementById('editId').value;
+  const erroEl = document.getElementById('erroEdicao');
+  erroEl.textContent = '';
+  const atividade = document.getElementById('editAtividade').value.trim();
+  if (!atividade) { erroEl.textContent = 'Descreva a atividade antes de salvar.'; return; }
+
+  const tarefa = {
+    categoria: document.getElementById('editCategoria').value,
+    atividade,
+    status: document.getElementById('editStatus').value.trim(),
+    prioridade: document.getElementById('editPrioridade').value,
+    responsavel: document.getElementById('editResponsavel').value.trim(),
+    registro: paraDataBR(document.getElementById('editRegistro').value),
+    previsao: paraDataBR(document.getElementById('editPrevisao').value)
+  };
+
+  try {
+    await chamarBackend('editar', { id, tarefa });
     modalTarefa.hide();
     await carregarTarefas();
   } catch (err) {
@@ -634,6 +735,11 @@ async function finalizarTarefa(id) {
     alert('Não foi possível finalizar: ' + err.message);
   }
 }
+
+document.getElementById('btnAtualizar').addEventListener('click', carregarTarefas);
+['filtroPrioridade', 'filtroFinalizadas'].forEach(id =>
+  document.getElementById(id).addEventListener('change', renderizar));
+document.getElementById('filtroResponsavel').addEventListener('input', renderizar);
 
 carregarTarefas();
 </script>
