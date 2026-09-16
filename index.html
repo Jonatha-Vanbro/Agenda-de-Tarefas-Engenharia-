@@ -899,13 +899,14 @@ function gerarConteudoImpressao() {
   `;
 
   categoriasAgenda.forEach(cat => {
-    const itens = baseCategoria.filter(t => t.categoria === cat);
-    html += `
-      <div class="pt-secao">
-        <h2>${nomesCategoria[cat]}</h2>
-        ${itens.length ? itens.map(t => itemLinha(t, t.responsavel || '—')).join('') : '<div class="pt-vazio">Sem pendências nesta seleção.</div>'}
-      </div>`;
-  });
+  const itens = baseCategoria.filter(t => t.categoria === cat);
+  if (itens.length === 0) return;
+  html += `
+    <div class="pt-secao">
+      <h2>${nomesCategoria[cat]}</h2>
+      ${itens.map(t => itemLinha(t, t.responsavel || '—')).join('')}
+    </div>`;
+});
 
   if (concluidasSelecionadas.length) {
     html += `
