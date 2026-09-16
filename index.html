@@ -13,7 +13,7 @@
   :root{
     --navy:#1B3B63;
     --navy-dark:#122C4C;
-    --page-bg:#CBD5E3;
+    --page-bg:#EEF2F7;
     --card-bg:#FFFFFF;
     --border:#E3E8EF;
     --ink:#1F2A3A;
@@ -273,6 +273,46 @@
     color:var(--muted);
     font-size:.88rem;
   }
+
+  /* ---------------- Impressão da pauta ---------------- */
+  .print-only{display:none;}
+  .pt-titulo{font-size:1.3rem;font-weight:800;margin:0;}
+  .pt-subtitulo{font-size:.85rem;color:var(--muted);margin-bottom:1rem;}
+  .pt-resumo{display:flex;gap:1.5rem;margin-bottom:1.2rem;font-size:.85rem;}
+  .pt-resumo b{font-size:1.1rem;}
+  .pt-secao{margin-bottom:1.1rem;}
+  .pt-secao h2{
+    font-size:.95rem;
+    font-weight:700;
+    border-bottom:2px solid #1B3B63;
+    padding-bottom:.2rem;
+    margin-bottom:.5rem;
+  }
+  .pt-item{
+    padding:.35rem 0;
+    border-bottom:1px solid #ddd;
+    font-size:.82rem;
+    display:flex;
+    justify-content:space-between;
+    gap:1rem;
+  }
+  .pt-item .pt-desc{flex:1;}
+  .pt-item .pt-meta{color:#555;white-space:nowrap;font-size:.78rem;}
+  .pt-vazio{color:#888;font-size:.8rem;font-style:italic;padding:.3rem 0;}
+
+  @media print{
+    body *{visibility:hidden;}
+    #areaImpressao, #areaImpressao *{visibility:visible;}
+    #areaImpressao{
+      display:block;
+      position:absolute;
+      left:0; top:0;
+      width:100%;
+      color:#000;
+      background:#fff;
+    }
+    .pt-secao{page-break-inside:avoid;}
+  }
 </style>
 </head>
 <body>
@@ -368,6 +408,7 @@
           </div>
           <div class="card-subtitle" style="margin-bottom:0;">Acompanhamento das atividades do setor</div>
         </div>
+        <button class="btn btn-outline-navy btn-sm" id="btnImprimir">🖨️ Imprimir pauta</button>
         <button class="btn btn-outline-navy btn-sm" id="btnAtualizar">↻ Atualizar</button>
       </div>
 
@@ -395,6 +436,9 @@
     </div>
   </div>
 </div>
+
+<!-- Área exclusiva de impressão (pauta da reunião) -->
+<div id="areaImpressao" class="print-only"></div>
 
 <!-- Modal Editar Tarefa -->
 <div class="modal fade" id="modalTarefa" tabindex="-1">
@@ -741,6 +785,93 @@ document.getElementById('btnAtualizar').addEventListener('click', carregarTarefa
 ['filtroPrioridade', 'filtroFinalizadas'].forEach(id =>
   document.getElementById(id).addEventListener('change', renderizar));
 document.getElementById('filtroResponsavel').addEventListener('input', renderizar);
+
+/* ---------------- Pauta de impressão ---------------- */
+
+function paraData(brDate) {
+  if (!brDate || !brDate.includes('/')) return null;
+  const [d, m, y] = brDate.split('/');
+  return new Date(y, m - 1, d);
+}
+
+function diasDeAtraso(previsaoBR) {
+  const p = paraData(previsaoBR);
+  if (!p) return 0;
+  const hoje = new Date(); hoje.setHours(0,0,0,0); p.setHours(0,0,0,0);
+  return Math.round((hoje - p) / 86400000);
+}
+
+function finalizadaNosUltimosDias(t, dias) {
+  const d = paraData(t.dataFinalizacao);
+  if (!d) return false;
+  const hoje = new Date(); hoje.setHours(0,0,0,0); d.setHours(0,0,0,0);
+  const diff = Math.round((hoje - d) / 86400000);
+  return diff >= 0 && diff <= dias;
+}
+
+function itemLinha(t, metaTexto) {
+  return `<div class="pt-item"><span class="pt-desc"><b>${escapeHtml(t.atividade)}</b>${t.status ? ' — ' + escapeHtml(t.status) : ''}</span><span class="pt-meta">${escapeHtml(metaTexto)}</span></div>`;
+}
+
+function gerarConteudoImpressao() {
+  const hoje = new Date();
+  const dataFmt = hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  const abertas = tarefasCache.filter(t => t.concluida !== 'SIM');
+  const atrasadas = abertas.filter(t => (t.situacao || '').startsWith('Atrasado'))
+    .sort((a, b) => diasDeAtraso(b.previsao) - diasDeAtraso(a.previsao));
+  const idsAtrasadas = new Set(atrasadas.map(t => t.id));
+  const altaPrioridade = abertas.filter(t => t.prioridade === 'Alta' && !idsAtrasadas.has(t.id));
+  const concluidasRecentes = tarefasCache.filter(t => t.concluida === 'SIM' && finalizadaNosUltimosDias(t, 7));
+
+  const categoriasAgenda = ["GERAL", "SEGURANÇA", "AGENDA MANUTENÇÃO", "ASSUNTOS EM ESPERA"];
+  const nomesCategoria = {
+    "GERAL": "Geral", "SEGURANÇA": "Segurança",
+    "AGENDA MANUTENÇÃO": "Agenda Manutenção", "ASSUNTOS EM ESPERA": "Assuntos em Espera"
+  };
+
+  let html = `
+    <h1 class="pt-titulo">Pauta de Engenharia</h1>
+    <div class="pt-subtitulo">Reunião de ${dataFmt}</div>
+    <div class="pt-resumo">
+      <div><b>${abertas.length}</b> em aberto</div>
+      <div><b>${atrasadas.length}</b> atrasadas</div>
+      <div><b>${altaPrioridade.length}</b> prioridade alta</div>
+      <div><b>${concluidasRecentes.length}</b> concluídas na semana</div>
+    </div>
+
+    <div class="pt-secao">
+      <h2>Atrasadas</h2>
+      ${atrasadas.length ? atrasadas.map(t => itemLinha(t, `${t.responsavel || 'sem responsável'} · ${diasDeAtraso(t.previsao)}d atraso`)).join('') : '<div class="pt-vazio">Nenhuma tarefa atrasada.</div>'}
+    </div>
+
+    <div class="pt-secao">
+      <h2>Prioridade alta em aberto</h2>
+      ${altaPrioridade.length ? altaPrioridade.map(t => itemLinha(t, t.responsavel || 'sem responsável')).join('') : '<div class="pt-vazio">Nenhuma pendência de alta prioridade.</div>'}
+    </div>
+
+    <div class="pt-secao">
+      <h2>Concluídas desde a última reunião</h2>
+      ${concluidasRecentes.length ? concluidasRecentes.map(t => itemLinha(t, t.dataFinalizacao || '')).join('') : '<div class="pt-vazio">Nenhuma conclusão registrada nos últimos 7 dias.</div>'}
+    </div>
+  `;
+
+  categoriasAgenda.forEach(cat => {
+    const itens = abertas.filter(t => t.categoria === cat);
+    html += `
+      <div class="pt-secao">
+        <h2>${nomesCategoria[cat]}</h2>
+        ${itens.length ? itens.map(t => itemLinha(t, t.responsavel || '—')).join('') : '<div class="pt-vazio">Sem pendências.</div>'}
+      </div>`;
+  });
+
+  document.getElementById('areaImpressao').innerHTML = html;
+}
+
+document.getElementById('btnImprimir').addEventListener('click', () => {
+  gerarConteudoImpressao();
+  setTimeout(() => window.print(), 80);
+});
 
 carregarTarefas();
 </script>
