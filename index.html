@@ -257,6 +257,29 @@
   .icon-btn:hover{background:#F0F3F8;color:var(--navy);}
   .icon-btn.finalizar:hover{background:var(--pill-green-bg);color:var(--pill-green-txt);}
 
+  .chk-select{
+    width:16px;
+    height:16px;
+    cursor:pointer;
+  }
+  .selecao-info{
+    font-size:.78rem;
+    color:var(--muted);
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+  }
+  .selecao-info button{
+    background:none;
+    border:none;
+    color:var(--navy);
+    font-size:.78rem;
+    font-weight:600;
+    padding:0;
+    cursor:pointer;
+    text-decoration:underline;
+  }
+
   .stat-row{
     display:flex;
     justify-content:space-between;
@@ -424,6 +447,7 @@
           <option value="Baixa">Baixa</option>
         </select>
         <input type="text" class="form-control" id="filtroResponsavel" placeholder="Filtrar por responsável…">
+        <div class="selecao-info ms-auto" id="selecaoInfo"></div>
       </div>
 
       <div style="overflow-x:auto;">
@@ -519,6 +543,7 @@ const CATEGORIAS = [
 
 let tarefasCache = [];
 let categoriaAtiva = "TODAS";
+let selecionadas = new Set();
 const modalTarefa = new bootstrap.Modal(document.getElementById('modalTarefa'));
 
 function montarTabs() {
@@ -594,6 +619,7 @@ function renderizar() {
     <table class="tarefas-table">
       <thead>
         <tr>
+          <th style="width:34px;"><input type="checkbox" class="chk-select" id="checkAllVisible" title="Selecionar todas as visíveis"></th>
           <th>Registro</th>
           <th>Categoria</th>
           <th>Prioridade</th>
@@ -611,6 +637,32 @@ function renderizar() {
 
   area.querySelectorAll('.btn-editar').forEach(b => b.addEventListener('click', () => abrirEdicao(b.dataset.id)));
   area.querySelectorAll('.btn-finalizar').forEach(b => b.addEventListener('click', () => finalizarTarefa(b.dataset.id)));
+  area.querySelectorAll('.chk-row').forEach(c => c.addEventListener('change', () => {
+    if (c.checked) selecionadas.add(c.dataset.id); else selecionadas.delete(c.dataset.id);
+    atualizarSelecaoInfo();
+  }));
+  const checkAll = document.getElementById('checkAllVisible');
+  checkAll.checked = filtradas.length > 0 && filtradas.every(t => selecionadas.has(String(t.id)));
+  checkAll.addEventListener('change', () => {
+    filtradas.forEach(t => {
+      if (checkAll.checked) selecionadas.add(String(t.id)); else selecionadas.delete(String(t.id));
+    });
+    renderizar();
+  });
+  atualizarSelecaoInfo();
+}
+
+function atualizarSelecaoInfo() {
+  const el = document.getElementById('selecaoInfo');
+  if (selecionadas.size === 0) {
+    el.innerHTML = 'Nenhuma selecionada — a pauta impressa trará tudo';
+  } else {
+    el.innerHTML = `${selecionadas.size} selecionada(s) para a pauta <button id="btnLimparSelecao" type="button">limpar</button>`;
+    document.getElementById('btnLimparSelecao').addEventListener('click', () => {
+      selecionadas.clear();
+      renderizar();
+    });
+  }
 }
 
 function pillPrioridade(p) {
@@ -645,8 +697,10 @@ function pillSituacao(sit) {
 }
 
 function renderLinha(t) {
+  const marcada = selecionadas.has(String(t.id));
   return `
     <tr class="${t.concluida === 'SIM' ? 'concluida' : ''}">
+      <td><input type="checkbox" class="chk-select chk-row" data-id="${t.id}" ${marcada ? 'checked' : ''}></td>
       <td class="cell-muted">
         ${escapeHtml(t.registro || '—')}
         ${t.ultimaAtualizacao ? `<div class="cell-sub">alterado em ${escapeHtml(t.ultimaAtualizacao)}</div>` : ''}
@@ -820,12 +874,15 @@ function gerarConteudoImpressao() {
   const hoje = new Date();
   const dataFmt = hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
 
+  const temSelecao = selecionadas.size > 0;
+  const porSelecao = t => !temSelecao || selecionadas.has(String(t.id));
+
   const abertas = tarefasCache.filter(t => t.concluida !== 'SIM');
-  const atrasadas = abertas.filter(t => (t.situacao || '').startsWith('Atrasado'))
+  const atrasadas = abertas.filter(t => (t.situacao || '').startsWith('Atrasado') && porSelecao(t))
     .sort((a, b) => diasDeAtraso(b.previsao) - diasDeAtraso(a.previsao));
   const idsAtrasadas = new Set(atrasadas.map(t => t.id));
-  const altaPrioridade = abertas.filter(t => t.prioridade === 'Alta' && !idsAtrasadas.has(t.id));
-  const concluidasRecentes = tarefasCache.filter(t => t.concluida === 'SIM' && finalizadaNosUltimosDias(t, 7));
+  const altaPrioridade = abertas.filter(t => t.prioridade === 'Alta' && !idsAtrasadas.has(t.id) && porSelecao(t));
+  const concluidasRecentes = tarefasCache.filter(t => t.concluida === 'SIM' && finalizadaNosUltimosDias(t, 7) && porSelecao(t));
 
   const categoriasAgenda = ["GERAL", "SEGURANÇA", "AGENDA MANUTENÇÃO", "ASSUNTOS EM ESPERA"];
   const nomesCategoria = {
@@ -835,36 +892,36 @@ function gerarConteudoImpressao() {
 
   let html = `
     <h1 class="pt-titulo">Pauta de Engenharia</h1>
-    <div class="pt-subtitulo">Reunião de ${dataFmt}</div>
+    <div class="pt-subtitulo">Reunião de ${dataFmt}${temSelecao ? ' · ' + selecionadas.size + ' item(ns) selecionado(s) para discussão' : ''}</div>
     <div class="pt-resumo">
-      <div><b>${abertas.length}</b> em aberto</div>
-      <div><b>${atrasadas.length}</b> atrasadas</div>
-      <div><b>${altaPrioridade.length}</b> prioridade alta</div>
-      <div><b>${concluidasRecentes.length}</b> concluídas na semana</div>
+      <div><b>${tarefasCache.filter(t => t.concluida !== 'SIM').length}</b> em aberto (total)</div>
+      <div><b>${tarefasCache.filter(t => (t.situacao || '').startsWith('Atrasado')).length}</b> atrasadas (total)</div>
+      <div><b>${tarefasCache.filter(t => t.concluida !== 'SIM' && t.prioridade === 'Alta').length}</b> prioridade alta (total)</div>
+      <div><b>${tarefasCache.filter(t => t.concluida === 'SIM').length}</b> concluídas (total)</div>
     </div>
 
     <div class="pt-secao">
       <h2>Atrasadas</h2>
-      ${atrasadas.length ? atrasadas.map(t => itemLinha(t, `${t.responsavel || 'sem responsável'} · ${diasDeAtraso(t.previsao)}d atraso`)).join('') : '<div class="pt-vazio">Nenhuma tarefa atrasada.</div>'}
+      ${atrasadas.length ? atrasadas.map(t => itemLinha(t, `${t.responsavel || 'sem responsável'} · ${diasDeAtraso(t.previsao)}d atraso`)).join('') : '<div class="pt-vazio">Nenhuma tarefa atrasada nesta seleção.</div>'}
     </div>
 
     <div class="pt-secao">
       <h2>Prioridade alta em aberto</h2>
-      ${altaPrioridade.length ? altaPrioridade.map(t => itemLinha(t, t.responsavel || 'sem responsável')).join('') : '<div class="pt-vazio">Nenhuma pendência de alta prioridade.</div>'}
+      ${altaPrioridade.length ? altaPrioridade.map(t => itemLinha(t, t.responsavel || 'sem responsável')).join('') : '<div class="pt-vazio">Nenhuma pendência de alta prioridade nesta seleção.</div>'}
     </div>
 
     <div class="pt-secao">
       <h2>Concluídas desde a última reunião</h2>
-      ${concluidasRecentes.length ? concluidasRecentes.map(t => itemLinha(t, t.dataFinalizacao || '')).join('') : '<div class="pt-vazio">Nenhuma conclusão registrada nos últimos 7 dias.</div>'}
+      ${concluidasRecentes.length ? concluidasRecentes.map(t => itemLinha(t, t.dataFinalizacao || '')).join('') : '<div class="pt-vazio">Nenhuma conclusão nesta seleção.</div>'}
     </div>
   `;
 
   categoriasAgenda.forEach(cat => {
-    const itens = abertas.filter(t => t.categoria === cat);
+    const itens = abertas.filter(t => t.categoria === cat && porSelecao(t));
     html += `
       <div class="pt-secao">
         <h2>${nomesCategoria[cat]}</h2>
-        ${itens.length ? itens.map(t => itemLinha(t, t.responsavel || '—')).join('') : '<div class="pt-vazio">Sem pendências.</div>'}
+        ${itens.length ? itens.map(t => itemLinha(t, t.responsavel || '—')).join('') : '<div class="pt-vazio">Sem pendências nesta seleção.</div>'}
       </div>`;
   });
 
