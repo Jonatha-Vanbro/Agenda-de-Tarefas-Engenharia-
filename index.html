@@ -878,11 +878,8 @@ function gerarConteudoImpressao() {
   const porSelecao = t => !temSelecao || selecionadas.has(String(t.id));
 
   const abertas = tarefasCache.filter(t => t.concluida !== 'SIM');
-  const atrasadas = abertas.filter(t => (t.situacao || '').startsWith('Atrasado') && porSelecao(t))
-    .sort((a, b) => diasDeAtraso(b.previsao) - diasDeAtraso(a.previsao));
-  const idsAtrasadas = new Set(atrasadas.map(t => t.id));
-  const altaPrioridade = abertas.filter(t => t.prioridade === 'Alta' && !idsAtrasadas.has(t.id) && porSelecao(t));
-  const concluidasRecentes = tarefasCache.filter(t => t.concluida === 'SIM' && finalizadaNosUltimosDias(t, 7) && porSelecao(t));
+  const baseCategoria = temSelecao ? tarefasCache.filter(t => t.concluida !== 'SIM' && porSelecao(t)) : abertas;
+  const concluidasSelecionadas = temSelecao ? tarefasCache.filter(t => t.concluida === 'SIM' && porSelecao(t)) : [];
 
   const categoriasAgenda = ["GERAL", "SEGURANÇA", "AGENDA MANUTENÇÃO", "ASSUNTOS EM ESPERA"];
   const nomesCategoria = {
@@ -899,31 +896,24 @@ function gerarConteudoImpressao() {
       <div><b>${tarefasCache.filter(t => t.concluida !== 'SIM' && t.prioridade === 'Alta').length}</b> prioridade alta (total)</div>
       <div><b>${tarefasCache.filter(t => t.concluida === 'SIM').length}</b> concluídas (total)</div>
     </div>
-
-    <div class="pt-secao">
-      <h2>Atrasadas</h2>
-      ${atrasadas.length ? atrasadas.map(t => itemLinha(t, `${t.responsavel || 'sem responsável'} · ${diasDeAtraso(t.previsao)}d atraso`)).join('') : '<div class="pt-vazio">Nenhuma tarefa atrasada nesta seleção.</div>'}
-    </div>
-
-    <div class="pt-secao">
-      <h2>Prioridade alta em aberto</h2>
-      ${altaPrioridade.length ? altaPrioridade.map(t => itemLinha(t, t.responsavel || 'sem responsável')).join('') : '<div class="pt-vazio">Nenhuma pendência de alta prioridade nesta seleção.</div>'}
-    </div>
-
-    <div class="pt-secao">
-      <h2>Concluídas desde a última reunião</h2>
-      ${concluidasRecentes.length ? concluidasRecentes.map(t => itemLinha(t, t.dataFinalizacao || '')).join('') : '<div class="pt-vazio">Nenhuma conclusão nesta seleção.</div>'}
-    </div>
   `;
 
   categoriasAgenda.forEach(cat => {
-    const itens = abertas.filter(t => t.categoria === cat && porSelecao(t));
+    const itens = baseCategoria.filter(t => t.categoria === cat);
     html += `
       <div class="pt-secao">
         <h2>${nomesCategoria[cat]}</h2>
         ${itens.length ? itens.map(t => itemLinha(t, t.responsavel || '—')).join('') : '<div class="pt-vazio">Sem pendências nesta seleção.</div>'}
       </div>`;
   });
+
+  if (concluidasSelecionadas.length) {
+    html += `
+      <div class="pt-secao">
+        <h2>Concluídas</h2>
+        ${concluidasSelecionadas.map(t => itemLinha(t, (t.responsavel || 'sem responsável') + (t.dataFinalizacao ? ' · finalizada em ' + t.dataFinalizacao : ''))).join('')}
+      </div>`;
+  }
 
   document.getElementById('areaImpressao').innerHTML = html;
 }
