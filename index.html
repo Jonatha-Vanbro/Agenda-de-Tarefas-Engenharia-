@@ -374,6 +374,18 @@
   }
   .pt-item .pt-desc{flex:1;}
   .pt-item .pt-meta{color:#555;white-space:nowrap;font-size:.78rem;}
+  .pt-tag{
+    display:block;
+    font-size:.68rem;
+    font-weight:700;
+    color:#888;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    margin-bottom:.15rem;
+  }
+  .pt-tag .prio-alta{color:#C0392B;}
+  .pt-tag .prio-media{color:#B7791F;}
+  .pt-tag .prio-baixa{color:#1F8A4C;}
   .pt-vazio{color:#888;font-size:.8rem;font-style:italic;padding:.3rem 0;}
 
   @media print{
@@ -1066,7 +1078,15 @@ function finalizadaNosUltimosDias(t, dias) {
 }
 
 function itemLinha(t, metaTexto) {
-  return `<div class="pt-item"><span class="pt-desc"><b>${escapeHtml(t.atividade)}</b>${t.status ? ' — ' + escapeHtml(t.status) : ''}</span><span class="pt-meta">${escapeHtml(metaTexto)}</span></div>`;
+  const prioClasse = t.prioridade === 'Alta' ? 'prio-alta' : t.prioridade === 'Média' ? 'prio-media' : t.prioridade === 'Baixa' ? 'prio-baixa' : '';
+  const tagPrioridade = t.prioridade ? `<span class="${prioClasse}">${escapeHtml(t.prioridade)}</span>` : 'sem prioridade';
+  return `<div class="pt-item">
+    <span class="pt-desc">
+      <span class="pt-tag">Registro: ${escapeHtml(t.registro || '—')} · Prioridade: ${tagPrioridade}</span>
+      <b>${escapeHtml(t.atividade)}</b>${t.status ? ' — ' + escapeHtml(t.status) : ''}
+    </span>
+    ${metaTexto ? `<span class="pt-meta">${escapeHtml(metaTexto)}</span>` : ''}
+  </div>`;
 }
 
 function gerarConteudoImpressao() {
@@ -1103,7 +1123,7 @@ function gerarConteudoImpressao() {
     html += `
       <div class="pt-secao">
         <h2>${nomesCategoria[cat]}</h2>
-        ${itens.map(t => itemLinha(t, t.responsavel || '—')).join('')}
+        ${itens.map(t => itemLinha(t)).join('')}
       </div>`;
   });
 
@@ -1111,7 +1131,7 @@ function gerarConteudoImpressao() {
     html += `
       <div class="pt-secao">
         <h2>Concluídas</h2>
-        ${concluidasSelecionadas.map(t => itemLinha(t, (t.responsavel || 'sem responsável') + (t.dataFinalizacao ? ' · finalizada em ' + t.dataFinalizacao : ''))).join('')}
+        ${concluidasSelecionadas.map(t => itemLinha(t, t.dataFinalizacao ? 'finalizada em ' + t.dataFinalizacao : '')).join('')}
       </div>`;
   }
 
