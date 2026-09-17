@@ -286,6 +286,7 @@
   }
   .icon-btn:hover{background:#F0F3F8;color:var(--navy);}
   .icon-btn.finalizar:hover{background:var(--pill-green-bg);color:var(--pill-green-txt);}
+  .icon-btn.btn-reabrir:hover{background:var(--pill-amber-bg);color:var(--pill-amber-txt);}
 
   .chk-select{
     width:16px;
@@ -698,6 +699,7 @@ function renderizar() {
 
   area.querySelectorAll('.btn-editar').forEach(b => b.addEventListener('click', () => abrirEdicao(b.dataset.id)));
   area.querySelectorAll('.btn-finalizar').forEach(b => b.addEventListener('click', () => finalizarTarefa(b.dataset.id)));
+  area.querySelectorAll('.btn-reabrir').forEach(b => b.addEventListener('click', () => reabrirTarefa(b.dataset.id)));
   area.querySelectorAll('.chk-row').forEach(c => c.addEventListener('change', () => {
     if (c.checked) selecionadas.add(c.dataset.id); else selecionadas.delete(c.dataset.id);
     atualizarSelecaoInfo();
@@ -778,7 +780,9 @@ function renderLinha(t) {
       <td>
         <div class="d-flex gap-1">
           <button class="icon-btn btn-editar" data-id="${t.id}" title="Editar">✎</button>
-          ${t.concluida !== 'SIM' ? `<button class="icon-btn finalizar btn-finalizar" data-id="${t.id}" title="Finalizar">✓</button>` : ''}
+          ${t.concluida !== 'SIM'
+            ? `<button class="icon-btn finalizar btn-finalizar" data-id="${t.id}" title="Finalizar">✓</button>`
+            : `<button class="icon-btn btn-reabrir" data-id="${t.id}" title="Reabrir">↺</button>`}
         </div>
       </td>
     </tr>`;
@@ -961,6 +965,17 @@ async function finalizarTarefa(id) {
     await carregarTarefas();
   } catch (err) {
     alert('Não foi possível finalizar: ' + err.message);
+  }
+}
+
+async function reabrirTarefa(id) {
+  if (!exigirLogin()) return;
+  if (!confirm('Deseja reabrir esta atividade? Ela voltará para "em aberto".')) return;
+  try {
+    await chamarBackend('reabrir', { id, usuario: usuarioAtual, senha: senhaAtual });
+    await carregarTarefas();
+  } catch (err) {
+    alert('Não foi possível reabrir: ' + err.message);
   }
 }
 
