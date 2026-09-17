@@ -322,6 +322,27 @@
   .stat-row:last-child{border-bottom:none;}
   .stat-label{color:var(--muted);}
 
+  .resumo-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:.6rem;
+  }
+  .resumo-tile{
+    border-radius:10px;
+    padding:.65rem .75rem;
+    display:flex;
+    flex-direction:column;
+    gap:.15rem;
+  }
+  .resumo-tile.full{grid-column:1 / -1;}
+  .resumo-tile svg{width:15px;height:15px;opacity:.8;}
+  .resumo-tile .valor{font-size:1.3rem;font-weight:800;line-height:1;margin-top:.3rem;}
+  .resumo-tile .rotulo{font-size:.66rem;text-transform:uppercase;letter-spacing:.03em;opacity:.8;}
+  .resumo-tile.t-gray{background:var(--pill-gray-bg);color:var(--pill-gray-txt);}
+  .resumo-tile.t-mint{background:var(--pill-mint-bg);color:var(--pill-mint-txt);}
+  .resumo-tile.t-red{background:var(--pill-red-bg);color:var(--pill-red-txt);}
+  .resumo-tile.t-green{background:var(--pill-green-bg);color:var(--pill-green-txt);}
+
   .empty-state, .loading-state{
     text-align:center;
     padding:3rem 1rem;
@@ -446,11 +467,33 @@
           Resumo
         </div>
         <div class="card-subtitle">Panorama geral das tarefas</div>
-        <div class="stat-row"><span class="stat-label">Total de tarefas</span><span class="pill pill-gray" id="statTotal">—</span></div>
-        <div class="stat-row"><span class="stat-label">Em aberto</span><span class="pill pill-mint" id="statAbertas">—</span></div>
-        <div class="stat-row"><span class="stat-label">Atrasadas</span><span class="pill pill-red" id="statAtrasadas">—</span></div>
-        <div class="stat-row"><span class="stat-label">Concluídas</span><span class="pill pill-green" id="statConcluidas">—</span></div>
-        <div class="stat-row"><span class="stat-label">Tempo médio de conclusão</span><span class="pill pill-mint" id="statTempoMedio">—</span></div>
+        <div class="resumo-grid">
+          <div class="resumo-tile t-gray">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M3 10h18"></path></svg>
+            <div class="valor" id="statTotal">—</div>
+            <div class="rotulo">Total</div>
+          </div>
+          <div class="resumo-tile t-mint">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="M18 9l-5 5-4-4-4 4"></path></svg>
+            <div class="valor" id="statAbertas">—</div>
+            <div class="rotulo">Em aberto</div>
+          </div>
+          <div class="resumo-tile t-red">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"></path><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"></path><path d="M12 17h.01"></path></svg>
+            <div class="valor" id="statAtrasadas">—</div>
+            <div class="rotulo">Atrasadas</div>
+          </div>
+          <div class="resumo-tile t-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+            <div class="valor" id="statConcluidas">—</div>
+            <div class="rotulo">Concluídas</div>
+          </div>
+          <div class="resumo-tile t-mint full">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
+            <div class="valor" id="statTempoMedio">—</div>
+            <div class="rotulo">Tempo médio de conclusão</div>
+          </div>
+        </div>
       </div>
     </div>
 
