@@ -80,6 +80,36 @@
     font-size:.85rem;
     margin-top:.1rem;
   }
+  .area-usuario{
+    margin-left:auto;
+    display:flex;
+    align-items:center;
+    gap:.6rem;
+  }
+  .area-usuario .btn{
+    border-radius:8px;
+    font-size:.8rem;
+    font-weight:600;
+  }
+  .btn-login{
+    background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.3);
+    color:#fff;
+  }
+  .btn-login:hover{background:rgba(255,255,255,0.22);color:#fff;}
+  .usuario-logado{
+    color:#fff;
+    font-size:.82rem;
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+  }
+  .usuario-logado .sair{
+    color:rgba(255,255,255,0.75);
+    text-decoration:underline;
+    cursor:pointer;
+    font-size:.76rem;
+  }
 
   .grid{
     display:grid;
@@ -351,6 +381,7 @@
       <h1>ATA Engenharia</h1>
       <div class="subtitle" id="resumoHeader">Relação de tarefas do setor de Engenharia</div>
     </div>
+    <div class="area-usuario" id="areaUsuario"></div>
   </header>
 
   <div class="grid">
@@ -462,6 +493,33 @@
 <!-- Área exclusiva de impressão (pauta da reunião) -->
 <div id="areaImpressao" class="print-only"></div>
 
+<!-- Modal Login -->
+<div class="modal fade" id="modalLogin" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content" style="border-radius:12px;">
+      <div class="modal-header" style="background:var(--navy); color:#fff; border-radius:12px 12px 0 0;">
+        <h5 class="modal-title">Login</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="field-label">Usuário</label>
+          <select class="form-select" id="loginNome"></select>
+        </div>
+        <div class="mb-2">
+          <label class="field-label">Senha</label>
+          <input type="password" class="form-control" id="loginSenha">
+        </div>
+        <div class="text-danger" style="font-size:.78rem;" id="erroLogin"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-navy btn-sm" id="btnEntrarLogin">Entrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Editar Tarefa -->
 <div class="modal fade" id="modalTarefa" tabindex="-1">
   <div class="modal-dialog">
@@ -544,7 +602,10 @@ const CATEGORIAS = [
 let tarefasCache = [];
 let categoriaAtiva = "TODAS";
 let selecionadas = new Set();
+let usuarioAtual = null;
+let senhaAtual = null;
 const modalTarefa = new bootstrap.Modal(document.getElementById('modalTarefa'));
+const modalLogin = new bootstrap.Modal(document.getElementById('modalLogin'));
 
 function montarTabs() {
   const el = document.getElementById('catTabs');
@@ -703,7 +764,7 @@ function renderLinha(t) {
       <td><input type="checkbox" class="chk-select chk-row" data-id="${t.id}" ${marcada ? 'checked' : ''}></td>
       <td class="cell-muted">
         ${escapeHtml(t.registro || '—')}
-        ${t.ultimaAtualizacao ? `<div class="cell-sub">alterado em ${escapeHtml(t.ultimaAtualizacao)}</div>` : ''}
+        ${t.ultimaAtualizacao ? `<div class="cell-sub">alterado em ${escapeHtml(t.ultimaAtualizacao)}${t.alteradoPor ? ' por ' + escapeHtml(t.alteradoPor) : ''}</div>` : ''}
       </td>
       <td>${pillCategoria(t.categoria)}</td>
       <td>${pillPrioridade(t.prioridade)}</td>
@@ -752,11 +813,73 @@ async function chamarBackend(action, body) {
   return json.data;
 }
 
+/* ---------------- Login ---------------- */
+
+function renderizarAreaUsuario() {
+  const el = document.getElementById('areaUsuario');
+  if (usuarioAtual) {
+    el.innerHTML = `<span class="usuario-logado">👤 ${escapeHtml(usuarioAtual)} <span class="sair" id="btnSair">sair</span></span>`;
+    document.getElementById('btnSair').addEventListener('click', () => {
+      usuarioAtual = null;
+      senhaAtual = null;
+      renderizarAreaUsuario();
+    });
+  } else {
+    el.innerHTML = `<button class="btn btn-login btn-sm" id="btnAbrirLogin">👤 Login</button>`;
+    document.getElementById('btnAbrirLogin').addEventListener('click', abrirLogin);
+  }
+}
+
+async function abrirLogin() {
+  const select = document.getElementById('loginNome');
+  document.getElementById('erroLogin').textContent = '';
+  document.getElementById('loginSenha').value = '';
+  select.innerHTML = '<option>Carregando…</option>';
+  modalLogin.show();
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL + "?action=usuarios");
+    const json = await resp.json();
+    if (!json.ok) throw new Error(json.error);
+    select.innerHTML = json.data.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+  } catch (err) {
+    select.innerHTML = '<option value="">Não foi possível carregar usuários</option>';
+  }
+}
+
+document.getElementById('btnEntrarLogin').addEventListener('click', async () => {
+  const nome = document.getElementById('loginNome').value;
+  const senha = document.getElementById('loginSenha').value;
+  const erroEl = document.getElementById('erroLogin');
+  erroEl.textContent = '';
+  if (!nome || !senha) { erroEl.textContent = 'Selecione o usuário e informe a senha.'; return; }
+  try {
+    const data = await chamarBackend('validarLogin', { usuario: nome, senha });
+    if (!data.valido) { erroEl.textContent = 'Usuário ou senha inválidos.'; return; }
+    usuarioAtual = nome;
+    senhaAtual = senha;
+    renderizarAreaUsuario();
+    modalLogin.hide();
+  } catch (err) {
+    erroEl.textContent = err.message;
+  }
+});
+
+/** Garante que há um usuário logado antes de uma ação protegida; se não houver, abre o login. */
+function exigirLogin() {
+  if (usuarioAtual) return true;
+  alert('Faça login antes de criar, editar ou finalizar tarefas.');
+  abrirLogin();
+  return false;
+}
+
+renderizarAreaUsuario();
+
 /* ---------------- Criar (formulário fixo na coluna esquerda) ---------------- */
 
 document.getElementById('campoRegistro').value = new Date().toISOString().slice(0, 10);
 
 document.getElementById('btnRegistrar').addEventListener('click', async () => {
+  if (!exigirLogin()) return;
   const erroEl = document.getElementById('erroFormulario');
   erroEl.textContent = '';
   const atividade = document.getElementById('campoAtividade').value.trim();
@@ -773,7 +896,7 @@ document.getElementById('btnRegistrar').addEventListener('click', async () => {
   };
 
   try {
-    await chamarBackend('criar', { tarefa });
+    await chamarBackend('criar', { tarefa, usuario: usuarioAtual, senha: senhaAtual });
     document.getElementById('campoAtividade').value = '';
     document.getElementById('campoStatus').value = '';
     document.getElementById('campoResponsavel').value = '';
@@ -804,6 +927,7 @@ function abrirEdicao(id) {
 }
 
 document.getElementById('btnSalvarEdicao').addEventListener('click', async () => {
+  if (!exigirLogin()) return;
   const id = document.getElementById('editId').value;
   const erroEl = document.getElementById('erroEdicao');
   erroEl.textContent = '';
@@ -821,7 +945,7 @@ document.getElementById('btnSalvarEdicao').addEventListener('click', async () =>
   };
 
   try {
-    await chamarBackend('editar', { id, tarefa });
+    await chamarBackend('editar', { id, tarefa, usuario: usuarioAtual, senha: senhaAtual });
     modalTarefa.hide();
     await carregarTarefas();
   } catch (err) {
@@ -830,9 +954,10 @@ document.getElementById('btnSalvarEdicao').addEventListener('click', async () =>
 });
 
 async function finalizarTarefa(id) {
+  if (!exigirLogin()) return;
   if (!confirm('Deseja realmente finalizar esta atividade?')) return;
   try {
-    await chamarBackend('finalizar', { id });
+    await chamarBackend('finalizar', { id, usuario: usuarioAtual, senha: senhaAtual });
     await carregarTarefas();
   } catch (err) {
     alert('Não foi possível finalizar: ' + err.message);
@@ -899,14 +1024,14 @@ function gerarConteudoImpressao() {
   `;
 
   categoriasAgenda.forEach(cat => {
-  const itens = baseCategoria.filter(t => t.categoria === cat);
-  if (itens.length === 0) return;
-  html += `
-    <div class="pt-secao">
-      <h2>${nomesCategoria[cat]}</h2>
-      ${itens.map(t => itemLinha(t, t.responsavel || '—')).join('')}
-    </div>`;
-});
+    const itens = baseCategoria.filter(t => t.categoria === cat);
+    if (itens.length === 0) return;
+    html += `
+      <div class="pt-secao">
+        <h2>${nomesCategoria[cat]}</h2>
+        ${itens.map(t => itemLinha(t, t.responsavel || '—')).join('')}
+      </div>`;
+  });
 
   if (concluidasSelecionadas.length) {
     html += `
