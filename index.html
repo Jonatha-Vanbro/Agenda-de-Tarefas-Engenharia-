@@ -450,6 +450,7 @@
         <div class="stat-row"><span class="stat-label">Em aberto</span><span class="pill pill-mint" id="statAbertas">—</span></div>
         <div class="stat-row"><span class="stat-label">Atrasadas</span><span class="pill pill-red" id="statAtrasadas">—</span></div>
         <div class="stat-row"><span class="stat-label">Concluídas</span><span class="pill pill-green" id="statConcluidas">—</span></div>
+        <div class="stat-row"><span class="stat-label">Tempo médio de conclusão</span><span class="pill pill-mint" id="statTempoMedio">—</span></div>
       </div>
     </div>
 
@@ -668,6 +669,8 @@ function renderizar() {
   document.getElementById('statAbertas').textContent = abertas;
   document.getElementById('statAtrasadas').textContent = atrasadas;
   document.getElementById('statConcluidas').textContent = concluidas;
+  const tempoMedio = tempoMedioConclusao();
+  document.getElementById('statTempoMedio').textContent = tempoMedio !== null ? tempoMedio + ' dia(s)' : '—';
 
   const filtradas = aplicarFiltros(tarefasCache);
   const area = document.getElementById('areaConteudo');
@@ -726,6 +729,19 @@ function atualizarSelecaoInfo() {
       renderizar();
     });
   }
+}
+
+/** Média de dias entre Registro e Data de Finalização, só das tarefas que têm as duas datas preenchidas. */
+function tempoMedioConclusao() {
+  const concluidas = tarefasCache.filter(t => t.concluida === 'SIM' && t.registro && t.dataFinalizacao);
+  if (concluidas.length === 0) return null;
+  const soma = concluidas.reduce((acc, t) => {
+    const r = paraData(t.registro);
+    const f = paraData(t.dataFinalizacao);
+    if (!r || !f) return acc;
+    return acc + Math.round((f - r) / 86400000);
+  }, 0);
+  return Math.round(soma / concluidas.length);
 }
 
 function pillPrioridade(p) {
