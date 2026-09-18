@@ -535,6 +535,16 @@
           <option value="Baixa">Baixa</option>
         </select>
         <input type="text" class="form-control" id="filtroResponsavel" placeholder="Filtrar por responsável…">
+        <select class="form-select" id="filtroAlteradoPor">
+          <option value="">Quem alterou (todos)</option>
+          <option value="Alex S. Wagner">Alex S. Wagner</option>
+          <option value="Henrique Rohsmann">Henrique Rohsmann</option>
+          <option value="Jonatha Santos">Jonatha Santos</option>
+        </select>
+        <div class="form-check form-switch ms-1">
+          <input class="form-check-input" type="checkbox" role="switch" id="filtroSemana">
+          <label class="form-check-label" for="filtroSemana" style="font-size:.8rem;">alteradas esta semana</label>
+        </div>
         <div class="selecao-info ms-auto" id="selecaoInfo"></div>
       </div>
 
@@ -699,6 +709,8 @@ async function carregarTarefas() {
 function aplicarFiltros(lista) {
   const prio = document.getElementById('filtroPrioridade').value;
   const resp = document.getElementById('filtroResponsavel').value.trim().toLowerCase();
+  const alteradoPor = document.getElementById('filtroAlteradoPor').value;
+  const somenteSemana = document.getElementById('filtroSemana').checked;
 
   return lista.filter(t => {
     if (categoriaAtiva === 'CONCLUIDAS') {
@@ -709,6 +721,11 @@ function aplicarFiltros(lista) {
     }
     if (prio && t.prioridade !== prio) return false;
     if (resp && !(t.responsavel || '').toLowerCase().includes(resp)) return false;
+    if (alteradoPor && t.alteradoPor !== alteradoPor) return false;
+    if (somenteSemana) {
+      const d = paraDataHora(t.ultimaAtualizacao);
+      if (!d || d < inicioSemana()) return false;
+    }
     return true;
   });
 }
@@ -1053,6 +1070,8 @@ async function reabrirTarefa(id) {
 document.getElementById('btnAtualizar').addEventListener('click', carregarTarefas);
 document.getElementById('filtroPrioridade').addEventListener('change', renderizar);
 document.getElementById('filtroResponsavel').addEventListener('input', renderizar);
+document.getElementById('filtroAlteradoPor').addEventListener('change', renderizar);
+document.getElementById('filtroSemana').addEventListener('change', renderizar);
 
 /* ---------------- Pauta de impressão ---------------- */
 
@@ -1060,6 +1079,24 @@ function paraData(brDate) {
   if (!brDate || !brDate.includes('/')) return null;
   const [d, m, y] = brDate.split('/');
   return new Date(y, m - 1, d);
+}
+
+/** Extrai só a parte de data de um valor "dd/MM/yyyy HH:mm" (como ultimaAtualizacao). */
+function paraDataHora(brDateTime) {
+  if (!brDateTime) return null;
+  const dataParte = brDateTime.split(' ')[0];
+  return paraData(dataParte);
+}
+
+/** Segunda-feira (00:00) da semana atual, considerando a data de hoje. */
+function inicioSemana() {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const diaSemana = hoje.getDay(); // 0=domingo, 1=segunda, ... 6=sábado
+  const diffParaSegunda = diaSemana === 0 ? 6 : diaSemana - 1;
+  const segunda = new Date(hoje);
+  segunda.setDate(hoje.getDate() - diffParaSegunda);
+  return segunda;
 }
 
 function diasDeAtraso(previsaoBR) {
