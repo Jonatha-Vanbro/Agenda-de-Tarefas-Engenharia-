@@ -671,6 +671,31 @@ let senhaAtual = null;
 const modalTarefa = new bootstrap.Modal(document.getElementById('modalTarefa'));
 const modalLogin = new bootstrap.Modal(document.getElementById('modalLogin'));
 
+/**
+ * Faz um fetch e tenta interpretar como JSON, repetindo automaticamente em caso de falha
+ * (rede instável, resposta HTML de erro do Google, timeout momentâneo, etc).
+ */
+async function fetchJsonComRetry(url, options, tentativas = 3, atrasoMs = 700) {
+  let ultimoErro;
+  for (let i = 0; i < tentativas; i++) {
+    try {
+      const resp = await fetch(url, options);
+      const texto = await resp.text();
+      try {
+        return JSON.parse(texto);
+      } catch (e) {
+        throw new Error('Resposta inválida do servidor (não é JSON). Pode ser instabilidade momentânea do Google.');
+      }
+    } catch (err) {
+      ultimoErro = err;
+      if (i < tentativas - 1) {
+        await new Promise(r => setTimeout(r, atrasoMs));
+      }
+    }
+  }
+  throw ultimoErro;
+}
+
 function montarTabs() {
   const el = document.getElementById('catTabs');
   el.innerHTML = CATEGORIAS.map(c => {
@@ -690,8 +715,7 @@ function montarTabs() {
 async function carregarTarefas() {
   document.getElementById('areaConteudo').innerHTML = '<div class="loading-state">Carregando tarefas do backend…</div>';
   try {
-    const resp = await fetch(APPS_SCRIPT_URL + "?action=listar");
-    const json = await resp.json();
+    const json = await fetchJsonComRetry(APPS_SCRIPT_URL + "?action=listar");
     if (!json.ok) throw new Error(json.error || "Erro desconhecido do backend.");
     tarefasCache = json.data;
     renderizar();
@@ -892,12 +916,11 @@ function paraDataBR(inputDate) {
 }
 
 async function chamarBackend(action, body) {
-  const resp = await fetch(APPS_SCRIPT_URL, {
+  const json = await fetchJsonComRetry(APPS_SCRIPT_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({ action, ...body })
   });
-  const json = await resp.json();
   if (!json.ok) throw new Error(json.error || 'Erro desconhecido do backend.');
   return json.data;
 }
@@ -926,8 +949,7 @@ async function abrirLogin() {
   select.innerHTML = '<option>Carregando…</option>';
   modalLogin.show();
   try {
-    const resp = await fetch(APPS_SCRIPT_URL + "?action=usuarios");
-    const json = await resp.json();
+    const json = await fetchJsonComRetry(APPS_SCRIPT_URL + "?action=usuarios");
     if (!json.ok) throw new Error(json.error);
     select.innerHTML = json.data.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
   } catch (err) {
@@ -938,8 +960,7 @@ async function abrirLogin() {
 /** Popula o filtro "Quem alterou" com os mesmos nomes exatos usados no login, evitando divergência de texto. */
 async function carregarOpcoesFiltroUsuario() {
   try {
-    const resp = await fetch(APPS_SCRIPT_URL + "?action=usuarios");
-    const json = await resp.json();
+    const json = await fetchJsonComRetry(APPS_SCRIPT_URL + "?action=usuarios");
     if (!json.ok) return;
     const select = document.getElementById('filtroAlteradoPor');
     const valorAtual = select.value;
