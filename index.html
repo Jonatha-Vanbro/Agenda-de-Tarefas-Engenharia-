@@ -537,9 +537,6 @@
         <input type="text" class="form-control" id="filtroResponsavel" placeholder="Filtrar por responsável…">
         <select class="form-select" id="filtroAlteradoPor">
           <option value="">Quem alterou (todos)</option>
-          <option value="Alex S. Wagner">Alex S. Wagner</option>
-          <option value="Henrique Rohsmann">Henrique Rohsmann</option>
-          <option value="Jonatha Santos">Jonatha Santos</option>
         </select>
         <div class="form-check form-switch ms-1">
           <input class="form-check-input" type="checkbox" role="switch" id="filtroSemana">
@@ -938,6 +935,22 @@ async function abrirLogin() {
   }
 }
 
+/** Popula o filtro "Quem alterou" com os mesmos nomes exatos usados no login, evitando divergência de texto. */
+async function carregarOpcoesFiltroUsuario() {
+  try {
+    const resp = await fetch(APPS_SCRIPT_URL + "?action=usuarios");
+    const json = await resp.json();
+    if (!json.ok) return;
+    const select = document.getElementById('filtroAlteradoPor');
+    const valorAtual = select.value;
+    select.innerHTML = '<option value="">Quem alterou (todos)</option>' +
+      json.data.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+    select.value = valorAtual;
+  } catch (err) {
+    // mantém só a opção "todos" se a busca falhar
+  }
+}
+
 document.getElementById('btnEntrarLogin').addEventListener('click', async () => {
   const nome = document.getElementById('loginNome').value;
   const senha = document.getElementById('loginSenha').value;
@@ -1181,6 +1194,7 @@ document.getElementById('btnImprimir').addEventListener('click', () => {
 });
 
 carregarTarefas();
+carregarOpcoesFiltroUsuario();
 </script>
 </body>
 </html>
