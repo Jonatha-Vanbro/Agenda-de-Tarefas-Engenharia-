@@ -697,6 +697,38 @@ async function fetchJsonComRetry(url, options, tentativas = 3, atrasoMs = 700) {
   throw ultimoErro;
 }
 
+/* ---------------- Cache local (mostra dados antigos instantaneamente enquanto atualiza) ---------------- */
+
+const CACHE_KEY = 'ataEngenharia_cache_v1';
+
+function salvarCacheLocal(tarefas) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ tarefas, timestamp: new Date().toISOString() }));
+  } catch (err) {
+    // Se o navegador bloquear localStorage (ex: modo privado), simplesmente não há cache — sem problema.
+  }
+}
+
+function carregarCacheLocal() {
+  try {
+    const bruto = localStorage.getItem(CACHE_KEY);
+    if (!bruto) return null;
+    const dado = JSON.parse(bruto);
+    if (!dado || !Array.isArray(dado.tarefas)) return null;
+    return dado;
+  } catch (err) {
+    return null;
+  }
+}
+
+function formatarHoraCache(isoTimestamp) {
+  try {
+    return new Date(isoTimestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  } catch (err) {
+    return '';
+  }
+}
+
 function montarTabs() {
   const el = document.getElementById('catTabs');
   el.innerHTML = CATEGORIAS.map(c => {
@@ -714,20 +746,36 @@ function montarTabs() {
 }
 
 async function carregarTarefas() {
-  document.getElementById('areaConteudo').innerHTML = '<div class="loading-state">Carregando tarefas do backend…</div>';
+  const cache = carregarCacheLocal();
+  if (cache) {
+    tarefasCache = cache.tarefas;
+    renderizar();
+    document.getElementById('ultimaAtualizacaoInfo').textContent =
+      'Mostrando dados salvos de ' + formatarHoraCache(cache.timestamp) + ' — atualizando…';
+  } else {
+    document.getElementById('areaConteudo').innerHTML = '<div class="loading-state">Carregando tarefas do backend…</div>';
+  }
+
   try {
     const json = await fetchJsonComRetry(APPS_SCRIPT_URL + "?action=listar");
     if (!json.ok) throw new Error(json.error || "Erro desconhecido do backend.");
     tarefasCache = json.data;
     renderizar();
+    salvarCacheLocal(tarefasCache);
     const agora = new Date();
     const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     document.getElementById('ultimaAtualizacaoInfo').textContent = 'Atualizado às ' + hora;
   } catch (err) {
-    document.getElementById('areaConteudo').innerHTML =
-      '<div class="empty-state">Não foi possível carregar as tarefas.<br>' +
-      '<span style="font-size:.75rem;">' + escapeHtml(err.message) + '</span><br><br>' +
-      'Confira a URL do Apps Script em <code>APPS_SCRIPT_URL</code> e o acesso "Qualquer pessoa" na implantação.</div>';
+    if (cache) {
+      // Mantém os dados antigos na tela; só avisa discretamente que não conseguiu atualizar agora.
+      document.getElementById('ultimaAtualizacaoInfo').textContent =
+        'Não foi possível atualizar agora — mostrando dados de ' + formatarHoraCache(cache.timestamp);
+    } else {
+      document.getElementById('areaConteudo').innerHTML =
+        '<div class="empty-state">Não foi possível carregar as tarefas.<br>' +
+        '<span style="font-size:.75rem;">' + escapeHtml(err.message) + '</span><br><br>' +
+        'Confira a URL do Apps Script em <code>APPS_SCRIPT_URL</code> e o acesso "Qualquer pessoa" na implantação.</div>';
+    }
   }
 }
 
