@@ -519,9 +519,10 @@
           </div>
           <div class="card-subtitle" style="margin-bottom:0;">Acompanhamento das atividades do setor</div>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 align-items-center">
           <button class="btn btn-outline-navy btn-sm" id="btnImprimir">🖨️ Imprimir pauta</button>
           <button class="btn btn-outline-navy btn-sm" id="btnAtualizar">↻ Atualizar</button>
+          <span class="cell-muted" id="ultimaAtualizacaoInfo" style="font-size:.72rem;"></span>
         </div>
       </div>
 
@@ -719,6 +720,9 @@ async function carregarTarefas() {
     if (!json.ok) throw new Error(json.error || "Erro desconhecido do backend.");
     tarefasCache = json.data;
     renderizar();
+    const agora = new Date();
+    const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    document.getElementById('ultimaAtualizacaoInfo').textContent = 'Atualizado às ' + hora;
   } catch (err) {
     document.getElementById('areaConteudo').innerHTML =
       '<div class="empty-state">Não foi possível carregar as tarefas.<br>' +
